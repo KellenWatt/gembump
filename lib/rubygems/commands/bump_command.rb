@@ -1,5 +1,5 @@
 class Gem::Commands::BumpCommand < Gem::Command
-  BUMP_METHODS = ["major", "minor", "patch"]
+  BUMP_METHODS = ["major", "minor", "patch", "subpatch"]
 
   def initialize
     super("bump", "Increases the version of a .gemspec file")
@@ -11,7 +11,7 @@ class Gem::Commands::BumpCommand < Gem::Command
 
   def arguments
     <<-ARGUMENTS
-    METHOD        version to update (major, minor, patch)
+    METHOD        version to update (#{BUMP_METHODS.join(", ")})
     FILE          name of the gemspec file (you can omit the .gemspec extension)
     ARGUMENTS
   end
@@ -26,7 +26,7 @@ class Gem::Commands::BumpCommand < Gem::Command
 
     if BUMP_METHODS.include?(bump_method)
       unless gemspec_exists?(gemspec)
-        puts "Invalid gemspec name specified"
+        puts "No gemspec name specified"
         show_help
         return
       end
@@ -57,6 +57,7 @@ class Gem::Commands::BumpCommand < Gem::Command
   end
 
   def gemspec_file(file)
+    file ||= ""
     if File.file?(file)
       file
     else
@@ -83,24 +84,29 @@ class Gem::Commands::BumpCommand < Gem::Command
 
   def bump_gemspec_version(type = "patch")
     versions = @version[:number].split(".").map(&:to_i)
-    (0..2).each do |i|
+    (0..3).each do |i|
       versions[i] ||= 0
       versions[i] = [0,versions[i]].max
     end
-    versions = versions[0..2]
+    versions = versions[0..3]
     case type
     when "major"
       versions[0] += 1
       versions[1] = 0
       versions[2] = 0
+      versions[3] = 0
     when "minor"
       versions[1] += 1
       versions[2] = 0
+      versions[3] = 0
     when "patch"
       versions[2] += 1
+      versions[3] = 0
+    when "subpatch"
+      versions[3] += 1
     end
     @old_version = @version[:number]
-    @version[:number] = versions.join(".")
+    @version[:number] = versions[0..(versions[3]&.zero? ? 2 : 3)].join(".")
   end
 
   def write_gemspec_file(filename)
