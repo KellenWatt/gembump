@@ -85,6 +85,7 @@ class Gem::Commands::BumpCommand < Gem::Command
     versions = @version[:number].split(".").map(&:to_i)
     (0..2).each do |i|
       versions[i] ||= 0
+      versions[i] = [0,versions[i]].max
     end
     versions = versions[0..2]
     case type
