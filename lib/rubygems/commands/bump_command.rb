@@ -111,7 +111,8 @@ class Gem::Commands::BumpCommand < Gem::Command
 
   def write_gemspec_file(filename)
     @gemspec_lines[@version[:line]] = "#{@version[:variable]} = \"#{@version[:number]}\"\n"
-    puts "Bumping #{filename.split(".")[0]} from #{@old_version} to #{@version[:number]}"
+    gem_name = filename.split("/")[-1].split(".")[0]
+    puts "Bumping #{gem_name} from #{@old_version} to #{@version[:number]}"
     File.open(filename, "w") do |f|
       f.write @gemspec_lines.join
     end
